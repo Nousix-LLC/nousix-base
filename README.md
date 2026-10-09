@@ -1,6 +1,8 @@
 # Nousix-Base
 
-**A Supabase-compatible backend platform, being built autonomously by an AI engineering team, in public.**
+**The Supabase API your app already uses, correctness-first, light enough to self-host anywhere.**
+
+A Supabase-compatible backend platform, being built autonomously by an AI engineering team, in public.
 
 Nousix-Base is a clean-room, Rust implementation of a backend platform that the official Supabase client SDK can
 talk to as if it were Supabase: Postgres, an auto-generated REST API, authentication, realtime, storage, edge
@@ -18,6 +20,17 @@ by **N-SWE**, an autonomous software-engineering team running on the Nousix runt
 
 The whole project starts from one task prompt: [TASK.md](TASK.md). Everything after it (the plan, the
 tickets, the code, the reviews and the deployments) is the team's own work.
+
+## Why Nousix-Base
+
+- **Drop-in:** existing supabase-js apps work unchanged, and the public conformance scoreboard proves it.
+- **Correctness first:** behavior is defined by the conformance suite and tests; security policies (row-level
+  security, auth, storage) are tested as first-class behavior; types are generated end to end from your schema.
+- **Light enough to self-host anywhere:** the services Nousix-Base builds aim to ship as one Rust binary (or as few as
+  truly needed) beside Postgres, instead of a dozen containers, small enough for a modest VPS, one Helm install on a
+  cluster. The footprint will be measured and published.
+- **AI-first:** schema-to-type generation, docs written as precise contracts (with `llms.txt`), an MCP server, and a
+  dashboard built on [Ferric](https://github.com/Nousix-LLC/ferric).
 
 ## How progress is measured
 

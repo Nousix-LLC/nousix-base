@@ -24,6 +24,27 @@ record of how the work was run, and it stays out of the public repository.
 Build Nousix-Base: a Supabase-compatible backend platform, as a clean-room implementation in Rust, developed as a real
 software project in public. Build, run and deploy it on k3s.
 
+### Why people would choose it
+
+Supabase is already open source and self-hostable, so "open source" is not a reason to switch. Nousix-Base has to earn
+its users. Its identity, which every design decision should serve:
+
+> **The Supabase API your app already uses, correctness-first, light enough to self-host anywhere.**
+
+- **Drop-in.** Existing supabase-js applications work unchanged; the public conformance scoreboard is the proof, not a
+  claim.
+- **Correctness first.** Behavior is defined by the conformance suite and by tests, never by approximation: security
+  policies (row-level security, auth flows, storage policies) are tested as first-class behavior, divergences from the
+  reference API are bugs filed on the board, and types are generated end to end from the database schema for Rust and
+  TypeScript clients.
+- **Light enough to self-host anywhere.** Self-hosting Supabase today means running a dozen or more containers. The
+  services Nousix-Base builds should ship as one Rust binary (or as few as the design truly needs) beside Postgres: small
+  enough for a modest VPS, one Helm install on a cluster. Judge every integrate-or-choose decision against this: prefer
+  embeddable and in-process options, and decide the REST layer (PostgREST alongside, or the same behavior in-process)
+  against this goal, recording why.
+- **AI-first.** The platform is easy for coding agents to use correctly: schema-to-type generation, documentation that
+  is a precise contract (with an `llms.txt`), and an MCP server for the platform. The dashboard is built on Ferric.
+
 What gets built and what gets integrated: recreate the services and extensions Supabase itself authors (for example
 its auth server, realtime, storage API, postgres-meta, Studio, edge runtime, pg_graphql, its CLI, and its smaller
 Postgres extensions such as pg_net and vault). Integrate the third-party projects Supabase depends on, or choose
@@ -49,8 +70,9 @@ for each SDK module (database/REST, auth, realtime, storage, functions) where th
 P4 and P5 have no SDK test suite; define and publish an equally objective yardstick for each (for example the CLI's own
 behavior against a Nousix-Base project, GraphQL queries, standard Postgres clients through the pooler).
 
-Don't try to do the whole build in one DAG. Use the repository's GitHub Project to define what each DAG does in terms of
-new code; seed the backlog from the conformance suite's failing tests and the build-out each phase needs. Changes land
+Don't try to do the whole build in one DAG. Use the repository's GitHub Project to plan the work: design work first (the
+overall architecture against the identity above, then each service's design, written up and reviewed before it is
+built), then implementation. Seed the backlog from the conformance suite's failing tests and the build-out each phase needs. Changes land
 as pull requests, and you schedule DAGs to review those pull requests with the code-review methodologies. Deploy the
 software on k3s, with GitHub Actions for CI and ArgoCD on k3s for delivery; the devops work is DAGs too. Report bugs as
 issues and spawn DAGs to fix them.
@@ -79,6 +101,8 @@ or schedule around it, until upstream resolves it.
 
 ## What done looks like
 
+- The self-hosting footprint is measured and published (services, containers, memory at idle), and it delivers on
+  "light enough to self-host anywhere".
 - All three phases closed on the project board; each SDK module's conformance pass rate at target and green on `main`.
 - The platform deploys from a clean cluster with one Helm install; CI on GitHub Actions and delivery through ArgoCD on
   k3s, with metrics and dashboards.
