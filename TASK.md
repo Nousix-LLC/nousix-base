@@ -8,7 +8,8 @@ its scope and nothing beyond it:
 - the project's k3s cluster (kubectl context `k3d-nswe`): the `nousix-base*` namespaces you create and this project's
   own ArgoCD Applications. Do not touch other projects' namespaces or applications on the cluster.
 
-Do not touch other repositories. Never force-push to `main`, and never rewrite merged history. The repository is
+Apart from issues and pull requests on `Nousix-LLC/ferric` (see "Ferric, your upstream"), do not touch other
+repositories. Never force-push to `main`, and never rewrite merged history. The repository is
 public: never commit secrets, tokens or credentials, and do not change its visibility, its interaction limits, or its
 branch protection.
 
@@ -23,19 +24,30 @@ record of how the work was run, and it stays out of the public repository.
 Build Nousix-Base: a Supabase-compatible backend platform, as a clean-room implementation in Rust, developed as a real
 software project in public. Build, run and deploy it on k3s.
 
+What gets built and what gets integrated: recreate the services and extensions Supabase itself authors (for example
+its auth server, realtime, storage API, postgres-meta, Studio, edge runtime, pg_graphql, its CLI, and its smaller
+Postgres extensions such as pg_net and vault). Integrate the third-party projects Supabase depends on, or choose
+alternatives that fit the design better: Postgres itself, PostgREST, the API gateway (Kong or another ingress), the
+connection pooler (for example PgBouncer instead of recreating Supavisor), pgvector, pg_cron, pgmq, imgproxy, and the
+logging and metrics stack. Record each integrate-or-choose decision where the public can read it.
+
 The product, in phases:
 
 | Phase | Scope |
 |---|---|
-| P1 — core | Postgres (used, not reimplemented); an auto-generated REST API over the database schema (PostgREST-compatible behavior); authentication: email/password, JWT issuance and verification, sessions/refresh, OAuth; an API gateway in front of the services; Helm charts and a working build → deploy → test loop |
-| P2 — live data & files | Realtime: clients subscribe to database changes over websockets (Postgres change data capture); Storage: S3-style buckets and objects with access policies |
-| P3 — compute & UI | Edge functions: HTTP-invoked functions on a WASM runtime; a web dashboard (Rust → WASM) to manage projects, tables, auth users, storage and functions |
+| P1 — core | Postgres; the REST API over the database schema (PostgREST, integrated); authentication with the full auth-server scope: email/password, magic links, phone/SMS OTP, MFA, OAuth and SSO, anonymous sign-in, JWT issuance and verification, sessions/refresh; an API gateway in front of the services; Helm charts and a working build → deploy → test loop |
+| P2 — live data & files | Realtime: Postgres changes, Broadcast and Presence over websockets; Storage: buckets and objects with access policies, resumable uploads, the S3-compatible protocol, and image transformations |
+| P3 — compute & UI | Edge functions: the function server (routing, auth context, secrets, deploy and invoke) on a WASM runtime; the dashboard, built on Ferric (below), to manage projects, tables, SQL, auth users, storage and functions |
+| P4 — platform services | GraphQL (pg_graphql), postgres-meta, connection pooling, database webhooks and async HTTP (pg_net), secrets (vault), vectors, cron and queues, and logs |
+| P5 — tooling | CLI compatibility: local development, migrations and diffs, type generation; the management API; backups |
 
-Rust for all services. The only JavaScript in the system is the conformance harness, which uses the official Supabase
+Rust for all the services you build. The only JavaScript in the system is the conformance harness, which uses the official Supabase
 client SDK (supabase-js) exactly as a real customer would.
 
 The yardstick is the official supabase-js SDK and its tests, run against a Nousix-Base deployment. Report the pass rate
 for each SDK module (database/REST, auth, realtime, storage, functions) where the public can see it, and keep it current.
+P4 and P5 have no SDK test suite; define and publish an equally objective yardstick for each (for example the CLI's own
+behavior against a Nousix-Base project, GraphQL queries, standard Postgres clients through the pooler).
 
 Don't try to do the whole build in one DAG. Use the repository's GitHub Project to define what each DAG does in terms of
 new code; seed the backlog from the conformance suite's failing tests and the build-out each phase needs. Changes land
@@ -45,6 +57,15 @@ issues and spawn DAGs to fix them.
 
 Treat the GitHub Project and Issues like a real Jira environment: they are where you manage and schedule the work and the
 code reviews.
+
+## Ferric, your upstream
+
+The dashboard is built on Ferric (`Nousix-LLC/ferric`), a Rust/WebAssembly web framework that another N-SWE team is
+taking to 1.0 at the same time. Depend on it as a pinned upstream dependency, the way you would on any open-source
+framework. When you hit a Ferric bug or need a feature it lacks, file an issue on `Nousix-LLC/ferric` with the
+`from:nousix-base` label and a first line saying it comes from Nousix-Base; you may also open a pull request there with
+a proposed fix. Never review or merge anything in the Ferric repository: its own team does that. Work around the gap,
+or schedule around it, until upstream resolves it.
 
 ## Constraints
 
