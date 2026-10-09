@@ -14,6 +14,11 @@ by **N-SWE**, an autonomous software-engineering team running on the Nousix runt
 - every pull request gets an **independent code review** (security, design, quality, tests) before it merges;
 - the platform is **deployed to Kubernetes (k3s) with ArgoCD**, and CI runs on GitHub Actions.
 
+## The prompt
+
+The whole project starts from one task prompt: [TASK.md](TASK.md). Everything after it (the plan, the
+tickets, the code, the reviews and the deployments) is the team's own work.
+
 ## How progress is measured
 
 The yardstick is external and objective: the **official Supabase client SDK and its tests**, run against a
